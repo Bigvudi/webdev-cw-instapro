@@ -68,10 +68,29 @@ export const goToPage = (newPage, data) => {
 
     if (newPage === USER_POSTS_PAGE) {
       // @@TODO: реализовать получение постов юзера из API
-      console.log("Открываю страницу пользователя: ", data.userId);
-      page = USER_POSTS_PAGE;
-      posts = [];
-      return renderApp();
+      page = LOADING_PAGE;
+      renderApp();
+
+      // ИСПРАВЛЕНО: Прописан полный путь до постов юзера с добавлением знака $
+      return fetch(
+        `https://webdev-hw-api.vercel.app/api/v1/Tyryshkin1/instapro?userId=${data.userId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: getToken(),
+          },
+        },
+      )
+        .then((response) => response.json())
+        .then((responseData) => {
+          page = USER_POSTS_PAGE;
+          posts = responseData.posts;
+          renderApp();
+        })
+        .catch((error) => {
+          console.error("Ошибка получения постов пользователя:", error);
+          goToPage(POSTS_PAGE);
+        });
     }
 
     page = newPage;
@@ -111,8 +130,31 @@ const renderApp = () => {
       appEl,
       onAddPostClick({ description, imageUrl }) {
         // @TODO: реализовать добавление поста в API
-        console.log("Добавляю пост...", { description, imageUrl });
-        goToPage(POSTS_PAGE);
+
+        // ИСПРАВЛЕНО: Прописан полный путь для публикации поста с вашим ключом
+        fetch("https://webdev-hw-api.vercel.app/api/v1/Tyryshkin1/instapro", {
+          method: "POST",
+          body: JSON.stringify({
+            description,
+            imageUrl,
+          }),
+          headers: {
+            Authorization: getToken(),
+          },
+        })
+          .then((response) => {
+            if (response.status === 400) {
+              throw new Error("Забыли описание или картинку");
+            }
+            return response.json();
+          })
+          .then(() => {
+            goToPage(POSTS_PAGE);
+          })
+          .catch((error) => {
+            console.error("Ошибка добавления поста:", error);
+            alert("Не удалось добавить post. Попробуйте снова.");
+          });
       },
     });
   }
@@ -125,8 +167,9 @@ const renderApp = () => {
 
   if (page === USER_POSTS_PAGE) {
     // @TODO: реализовать страницу с фотографиями отдельного пользвателя
-    appEl.innerHTML = "Здесь будет страница фотографий пользователя";
-    return;
+    return renderPostsPageComponent({
+      appEl,
+    });
   }
 };
 
