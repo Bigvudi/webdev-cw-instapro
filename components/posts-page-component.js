@@ -1,7 +1,5 @@
 import { USER_POSTS_PAGE } from "../routes.js";
 import { renderHeaderComponent } from "./header-component.js";
-import { formatDistanceToNow } from "date-fns";
-import { ru } from "date-fns/locale";
 // Добавили в деструктуризацию getToken для авторизации лайков и renderApp для обновления интерфейса
 import { posts, goToPage, getToken, renderApp } from "../index.js";
 
@@ -20,13 +18,15 @@ export function renderPostsPageComponent({ appEl }) {
                 <ul class="posts">
                   ${posts
                     .map((post) => {
-                      const formattedDate = formatDistanceToNow(
-                        new Date(post.createdAt),
-                        {
-                          addSuffix: true,
-                          locale: ru,
-                        },
-                      );
+                      // Локально переводим дату в красивый текстовый формат, чтобы не ломать скрипт импортами
+                      const formattedDate = new Date(
+                        post.createdAt,
+                      ).toLocaleDateString("ru-RU", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "numeric",
+                        month: "long",
+                      });
 
                       return `
                       <li class="post">
