@@ -67,11 +67,9 @@ export const goToPage = (newPage, data) => {
     }
 
     if (newPage === USER_POSTS_PAGE) {
-      // @@TODO: реализовать получение постов юзера из API
       page = LOADING_PAGE;
       renderApp();
 
-      // ИСПРАВЛЕНО: Прописан полный путь до постов юзера с добавлением знака $
       return fetch(
         `https://webdev-hw-api.vercel.app/api/v1/Tyryshkin2/instapro/user-posts/${data.userId}`,
         {
@@ -102,6 +100,14 @@ export const goToPage = (newPage, data) => {
   throw new Error("страницы не существует");
 };
 
+function sanitizeHtml(string) {
+  return string
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
 export const renderApp = () => {
   const appEl = document.getElementById("app");
   if (page === LOADING_PAGE) {
@@ -129,13 +135,13 @@ export const renderApp = () => {
     return renderAddPostPageComponent({
       appEl,
       onAddPostClick({ description, imageUrl }) {
-        // @TODO: реализовать добавление поста в API
+        // ИСПРАВЛЕНО: Теперь строка обрабатывается функцией очистки от тегов
+        const safeDescription = sanitizeHtml(description);
 
-        // ИСПРАВЛЕНО: Прописан полный путь для публикации поста с вашим ключом
         fetch("https://webdev-hw-api.vercel.app/api/v1/Tyryshkin2/instapro", {
           method: "POST",
           body: JSON.stringify({
-            description,
+            description: safeDescription, // Отправляем экранированный текст
             imageUrl,
           }),
           headers: {
@@ -166,7 +172,6 @@ export const renderApp = () => {
   }
 
   if (page === USER_POSTS_PAGE) {
-    // @TODO: реализовать страницу с фотографиями отдельного пользвателя
     return renderPostsPageComponent({
       appEl,
     });
