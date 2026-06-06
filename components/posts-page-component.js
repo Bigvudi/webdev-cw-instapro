@@ -1,6 +1,9 @@
 import { USER_POSTS_PAGE } from "../routes.js";
 import { renderHeaderComponent } from "./header-component.js";
-import { posts, goToPage } from "../index.js";
+import { formatDistanceToNow } from "date-fns";
+import { ru } from "date-fns/locale";
+// Добавили в деструктуризацию getToken для авторизации лайков и renderApp для обновления интерфейса
+import { posts, goToPage, getToken, renderApp } from "../index.js";
 
 export function renderPostsPageComponent({ appEl }) {
   // @TODO: реализовать рендер постов из api
@@ -8,7 +11,7 @@ export function renderPostsPageComponent({ appEl }) {
 
   /**
    * @TODO: чтобы отформатировать дату создания поста в виде "19 минут назад"
-   * можно использовать https://date-fns.org/v2.29.3/docs/formatDistanceToNow
+   * можно использовать https://date-fns.org
    */
 
   const appHtml = `
@@ -17,6 +20,14 @@ export function renderPostsPageComponent({ appEl }) {
                 <ul class="posts">
                   ${posts
                     .map((post) => {
+                      const formattedDate = formatDistanceToNow(
+                        new Date(post.createdAt),
+                        {
+                          addSuffix: true,
+                          locale: ru,
+                        },
+                      );
+
                       return `
                       <li class="post">
                         <div class="post-header" data-user-id="${post.user.id}">
@@ -27,10 +38,12 @@ export function renderPostsPageComponent({ appEl }) {
                           <img class="post-image" src="${post.imageUrl}">
                         </div>
                         <div class="post-likes">
-                          <button data-post-id="${post.id}" class="like-button">
+                          <!-- Добавили data-атрибуты для отслеживания id и текущего статуса лайка -->
+                          <button data-post-id="${post.id}" data-is-liked="${post.isLiked}" class="like-button">
                             <img src="${post.isLiked ? "./assets/images/like-active.svg" : "./assets/images/like-not-active.svg"}">
                           </button>
                           <p class="post-likes-text">
+                            <!-- Выводим количество лайков как длину массива -->
                             Нравится: <strong>${post.likes.length}</strong>
                           </p>
                         </div>
@@ -39,7 +52,7 @@ export function renderPostsPageComponent({ appEl }) {
                           ${post.description}
                         </p>
                         <p class="post-date">
-                          ${post.createdAt}
+                          ${formattedDate}
                         </p>
                       </li>
                     `;
@@ -59,6 +72,52 @@ export function renderPostsPageComponent({ appEl }) {
       goToPage(USER_POSTS_PAGE, {
         userId: userEl.dataset.userId,
       });
+    });
+  }
+
+  // ОБРАБОТКА ЛАЙКОВ: Навешиваем клики на все кнопки-сердечки
+  for (let likeBtnEl of document.querySelectorAll(".like-button")) {
+    likeBtnEl.addEventListener("click", () => {
+      const postId = likeBtnEl.dataset.postId;
+      const isLiked = likeBtnEl.dataset.isLiked === "true";
+
+      // Определяем действие для эндпоинта в зависимости от текущего состояния лайка
+      const action = isLiked ? "dislike" : "like";
+
+      // ИСПРАВЛЕНО: ID поста перенесен в URL-адрес, убраны лишние заголовки и body
+      fetch(
+        `https://webdev-hw-api.vercel.app/api/v1/Tyryshkin1/instapro/${postId}/${action}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: getToken(), // Передаем токен авторизации
+          },
+        },
+      )
+        .then((response) => {
+          if (response.status === 401) {
+            alert("Лайкать посты могут только зарегистрированные пользователи");
+            throw new Error("Нет авторизации");
+          }
+          if (response.status === 404) {
+            alert("Пост не найден");
+            throw new Error("Пост не найден");
+          }
+          return response.json();
+        })
+        .then((responseData) => {
+          // Находим измененный пост в глобальном массиве постов
+          const postIndex = posts.findIndex((p) => p.id === postId);
+          if (postIndex !== -1) {
+            // Подменяем старый объект обновленным объектом поста, который вернул сервер
+            posts[postIndex] = responseData.post;
+          }
+          // Мгновенно перерисовываем страницу приложения без полной перезагрузки окна
+          renderApp();
+        })
+        .catch((error) => {
+          console.error("Ошибка при обработке лайка:", error);
+        });
     });
   }
 }
