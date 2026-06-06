@@ -4,7 +4,7 @@ export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
     // Переменная для динамического сохранения ссылки на загруженное фото
     let imageUrl = "";
 
-    // @TODO: Реализовать страницу добавления поста — ИСПРАВЛЕНО
+    // @TODO: Реализовать страницу добавления поста
     const appHtml = `
     <div class="page-container">
       <div class="header-container"></div>
@@ -39,13 +39,13 @@ export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
       renderUploadImageComponent({
         element: uploadImageContainer,
         onImageUrlChange(newImageUrl) {
-          // Как только облако вернет ссылку на картинку, сохраняем её в нашу переменную
+          // Как только облако вернет ссылку на картинку, сохраняем её в переменную
           imageUrl = newImageUrl;
         },
       });
     }
 
-    // 2. Навешиваем живой обработчик клика на кнопку отправки
+    // 2. Навешиваем обработчик клика на кнопку отправки
     document.getElementById("add-button").addEventListener("click", () => {
       const descriptionInput = document.getElementById("description-input");
 

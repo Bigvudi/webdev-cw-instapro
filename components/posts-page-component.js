@@ -33,8 +33,6 @@ export function renderPostsPageComponent({ appEl }) {
                       }
 
                       // 2. ЗАЩИТА ОТ БИТЫХ ССЫЛОК
-                      // Если ссылка равна "https://image.png", делаем её пустой строкой, чтобы не ломать сайт.
-                      // В остальных случаях выводим родной адрес с Яндекс.Облака (post.imageUrl).
                       const userAvatar =
                         post.user.imageUrl === "https://image.png" ||
                         post.user.imageUrl === "http://image.png"
@@ -106,7 +104,6 @@ export function renderPostsPageComponent({ appEl }) {
       const isLiked = likeBtnEl.dataset.isLiked === "true";
       const action = isLiked ? "dislike" : "like";
 
-      // ИСПРАВЛЕНО: ID поста перенесен в URL-адрес, убраны лишние заголовки и body
       fetch(
         `https://webdev-hw-api.vercel.app/api/v1/Tyryshkin2/instapro/${postId}/${action}`,
         {
