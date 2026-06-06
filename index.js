@@ -73,7 +73,7 @@ export const goToPage = (newPage, data) => {
 
       // ИСПРАВЛЕНО: Прописан полный путь до постов юзера с добавлением знака $
       return fetch(
-        `https://webdev-hw-api.vercel.app/api/v1/Tyryshkin1/instapro?userId=${data.userId}`,
+        `https://webdev-hw-api.vercel.app/api/v1/Tyryshkin2/instapro?userId=${data.userId}`,
         {
           method: "GET",
           headers: {
@@ -132,7 +132,7 @@ export const renderApp = () => {
         // @TODO: реализовать добавление поста в API
 
         // ИСПРАВЛЕНО: Прописан полный путь для публикации поста с вашим ключом
-        fetch("https://webdev-hw-api.vercel.app/api/v1/Tyryshkin1/instapro", {
+        fetch("https://webdev-hw-api.vercel.app/api/v1/Tyryshkin2/instapro", {
           method: "POST",
           body: JSON.stringify({
             description,

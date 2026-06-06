@@ -32,20 +32,20 @@ export function renderPostsPageComponent({ appEl }) {
                         formattedDate = "Недавно";
                       }
 
-                      // 2. ЗАЩИТА ОТ БИТЫХ ССЫЛОК (В ТОМ ЧИСЛЕ "image.png")
-                      // Если ссылка не начинается на http или равна "image.png", ставим заглушку
-                      const isUserImageValid =
-                        post.user.imageUrl &&
-                        post.user.imageUrl.startsWith("http");
-                      const userAvatar = isUserImageValid
-                        ? post.user.imageUrl
-                        : "https://placeholder.co";
+                      // 2. ЗАЩИТА ОТ БИТЫХ ССЫЛОК
+                      // Если ссылка равна "https://image.png", делаем её пустой строкой, чтобы не ломать сайт.
+                      // В остальных случаях выводим родной адрес с Яндекс.Облака (post.imageUrl).
+                      const userAvatar =
+                        post.user.imageUrl === "https://image.png" ||
+                        post.user.imageUrl === "http://image.png"
+                          ? ""
+                          : post.user.imageUrl;
 
-                      const isPostImageValid =
-                        post.imageUrl && post.imageUrl.startsWith("http");
-                      const postImage = isPostImageValid
-                        ? post.imageUrl
-                        : "https://placeholder.co";
+                      const postImage =
+                        post.imageUrl === "https://image.png" ||
+                        post.imageUrl === "http://image.png"
+                          ? ""
+                          : post.imageUrl;
 
                       return `
                       <li class="post">
@@ -103,7 +103,7 @@ export function renderPostsPageComponent({ appEl }) {
 
       // ИСПРАВЛЕНО: ID поста перенесен в URL-адрес, убраны лишние заголовки и body
       fetch(
-        `https://webdev-hw-api.vercel.app/api/v1/Tyryshkin1/instapro/${postId}/${action}`,
+        `https://webdev-hw-api.vercel.app/api/v1/Tyryshkin2/instapro/${postId}/${action}`,
         {
           method: "POST",
           headers: {
