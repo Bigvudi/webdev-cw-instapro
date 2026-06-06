@@ -19,40 +19,48 @@ export function renderPostsPageComponent({ appEl }) {
                 <ul class="posts">
                   ${posts
                     .map((post) => {
-                      // Локально переводим дату в красивый текстовый формат, чтобы не ломать скрипт импортами
-                      const formattedDate = (() => {
-                        try {
-                          // Если даты нет вовсе, возвращаем прочерк
-                          if (!post.createdAt) return "Дата неизвестна";
-
-                          // Передаем дату в нашу локальную функцию
-                          return formatDistanceToNow(new Date(post.createdAt));
-                        } catch (error) {
-                          console.error(
-                            "Ошибка форматирования даты для поста:",
-                            post.id,
-                            error,
+                      // 1. БЕЗОПАСНОЕ ФОРМАТИРОВАНИЕ ДАТЫ
+                      let formattedDate = "Только что";
+                      try {
+                        if (post.createdAt) {
+                          formattedDate = formatDistanceToNow(
+                            new Date(post.createdAt),
                           );
-                          return "Ошибка даты";
                         }
-                      })();
+                      } catch (e) {
+                        console.error("Ошибка даты:", e);
+                        formattedDate = "Недавно";
+                      }
+
+                      // 2. ЗАЩИТА ОТ БИТЫХ ССЫЛОК (В ТОМ ЧИСЛЕ "image.png")
+                      // Если ссылка не начинается на http или равна "image.png", ставим заглушку
+                      const isUserImageValid =
+                        post.user.imageUrl &&
+                        post.user.imageUrl.startsWith("http");
+                      const userAvatar = isUserImageValid
+                        ? post.user.imageUrl
+                        : "https://placeholder.co";
+
+                      const isPostImageValid =
+                        post.imageUrl && post.imageUrl.startsWith("http");
+                      const postImage = isPostImageValid
+                        ? post.imageUrl
+                        : "https://placeholder.co";
 
                       return `
                       <li class="post">
                         <div class="post-header" data-user-id="${post.user.id}">
-                            <img src="${post.user.imageUrl}" class="post-header__user-image">
+                            <img src="${userAvatar}" class="post-header__user-image">
                             <p class="post-header__user-name">${post.user.name}</p>
                         </div>
                         <div class="post-image-container">
-                          <img class="post-image" src="${post.imageUrl}">
+                          <img class="post-image" src="${postImage}">
                         </div>
                         <div class="post-likes">
-                          <!-- Добавили data-атрибуты для отслеживания id и текущего статуса лайка -->
                           <button data-post-id="${post.id}" data-is-liked="${post.isLiked}" class="like-button">
                             <img src="${post.isLiked ? "./assets/images/like-active.svg" : "./assets/images/like-not-active.svg"}">
                           </button>
                           <p class="post-likes-text">
-                            <!-- Выводим количество лайков как длину массива -->
                             Нравится: <strong>${post.likes.length}</strong>
                           </p>
                         </div>
