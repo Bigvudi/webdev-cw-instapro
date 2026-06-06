@@ -1,5 +1,6 @@
 import { USER_POSTS_PAGE } from "../routes.js";
 import { renderHeaderComponent } from "./header-component.js";
+import { formatDistanceToNow } from "./date-fns-local.js";
 // Добавили в деструктуризацию getToken для авторизации лайков и renderApp для обновления интерфейса
 import { posts, goToPage, getToken, renderApp } from "../index.js";
 
@@ -19,14 +20,22 @@ export function renderPostsPageComponent({ appEl }) {
                   ${posts
                     .map((post) => {
                       // Локально переводим дату в красивый текстовый формат, чтобы не ломать скрипт импортами
-                      const formattedDate = new Date(
-                        post.createdAt,
-                      ).toLocaleDateString("ru-RU", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        day: "numeric",
-                        month: "long",
-                      });
+                      const formattedDate = (() => {
+                        try {
+                          // Если даты нет вовсе, возвращаем прочерк
+                          if (!post.createdAt) return "Дата неизвестна";
+
+                          // Передаем дату в нашу локальную функцию
+                          return formatDistanceToNow(new Date(post.createdAt));
+                        } catch (error) {
+                          console.error(
+                            "Ошибка форматирования даты для поста:",
+                            post.id,
+                            error,
+                          );
+                          return "Ошибка даты";
+                        }
+                      })();
 
                       return `
                       <li class="post">
