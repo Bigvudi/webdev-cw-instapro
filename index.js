@@ -73,7 +73,7 @@ export const goToPage = (newPage, data) => {
 
       // ИСПРАВЛЕНО: Прописан полный путь до постов юзера с добавлением знака $
       return fetch(
-        `https://webdev-hw-api.vercel.app/api/v1/Tyryshkin2/instapro?userId=${data.userId}`,
+        `https://webdev-hw-api.vercel.app/api/v1/Tyryshkin2/instapro/user-posts/${data.userId}`,
         {
           method: "GET",
           headers: {

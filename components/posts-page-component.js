@@ -95,10 +95,15 @@ export function renderPostsPageComponent({ appEl }) {
   // ОБРАБОТКА ЛАЙКОВ: Навешиваем клики на все кнопки-сердечки
   for (let likeBtnEl of document.querySelectorAll(".like-button")) {
     likeBtnEl.addEventListener("click", () => {
+      // ПРОВЕРКА ДЛЯ НЕАВТОРИЗОВАННЫХ ПОЛЬЗОВАТЕЛЕЙ
+      // Если токена нет, сразу показываем ошибку и прерываем функцию (не отправляем fetch)
+      if (!getToken()) {
+        alert("Лайкать посты могут только зарегистрированные пользователи");
+        return;
+      }
+
       const postId = likeBtnEl.dataset.postId;
       const isLiked = likeBtnEl.dataset.isLiked === "true";
-
-      // Определяем действие для эндпоинта в зависимости от текущего состояния лайка
       const action = isLiked ? "dislike" : "like";
 
       // ИСПРАВЛЕНО: ID поста перенесен в URL-адрес, убраны лишние заголовки и body
